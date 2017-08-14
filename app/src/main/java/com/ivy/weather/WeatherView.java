@@ -92,8 +92,9 @@ public class WeatherView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (w!=oldw||h!=oldh)
-            resetAnim();
+        if (w!=oldw||h!=oldh) {
+            startAnim();
+        }
     }
 
     public void init(){
