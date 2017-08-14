@@ -16,6 +16,8 @@ import android.os.Handler;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
 import java.util.HashMap;
@@ -92,9 +94,6 @@ public class WeatherView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        if (w!=oldw||h!=oldh) {
-            startAnim();
-        }
     }
 
     public void init(){
@@ -309,6 +308,7 @@ public class WeatherView extends View {
         ValueAnimator sunAnim= animMap.get(ANIM_SUN_ZOOM);
         if (sunAnim==null){
             sunAnim=ValueAnimator.ofFloat().setDuration(400);
+            sunAnim.setInterpolator(new AccelerateDecelerateInterpolator());
             sunAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -323,6 +323,7 @@ public class WeatherView extends View {
         ValueAnimator flowerAnim= animMap.get(ANIM_FLOWER_ZOOM);
         if (flowerAnim==null){
             flowerAnim=ValueAnimator.ofFloat().setDuration(400);
+            flowerAnim.setInterpolator(new AccelerateDecelerateInterpolator());
             flowerAnim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
                 @Override
                 public void onAnimationUpdate(ValueAnimator animation) {
@@ -338,7 +339,7 @@ public class WeatherView extends View {
                     startSunRotate();
                 }
             });
-            flowerAnim.setStartDelay(150);
+            flowerAnim.setStartDelay(100);
             animMap.put(ANIM_FLOWER_ZOOM,flowerAnim);
         }
         flowerAnim.setFloatValues(0,maxSunFlowerWidth,maxSunFlowerWidth*0.9f);
