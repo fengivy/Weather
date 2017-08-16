@@ -272,9 +272,10 @@ public class WeatherView extends View {
             valueAnimator=ValueAnimator.ofObject(new CircleTypeEvaluator(circleInfo),new CircleInfo(circleInfo.getX(),circleInfo.getY()+circleInfo.getRadius(),0)
                     ,new CircleInfo(circleInfo.getX(),circleInfo.getY(),circleInfo.getRadius()));
             valueAnimator.setDuration(600);
-            valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            valueAnimator.addListener(new AnimatorListenerAdapter() {
                 @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
+                public void onAnimationStart(Animator animation) {
+                    super.onAnimationStart(animation);
                     circleInfo.setCanDraw(true);
                 }
             });
@@ -525,8 +526,9 @@ public class WeatherView extends View {
     }
 
     private void startValueAnimator(ValueAnimator valueAnimator){
-        if (isStart)
+        if (isStart) {
             valueAnimator.start();
+        }
     }
 
     private void resetAnim() {
@@ -587,13 +589,10 @@ public class WeatherView extends View {
 
     private void stopAnimAndRemoveCallbacks(){
         isStart=false;
-        Handler handler=this.getHandler();
-        if (handler!=null){
-            handler.removeCallbacksAndMessages(null);
-        }
         for (Map.Entry<String, ValueAnimator> entry : animMap.entrySet()) {
-            entry.getValue().cancel();
+            entry.getValue().end();
         }
+        Handler handler=this.getHandler();
         if (handler!=null){
             handler.removeCallbacksAndMessages(null);
         }
