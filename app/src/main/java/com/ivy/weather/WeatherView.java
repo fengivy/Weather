@@ -64,6 +64,7 @@ public class WeatherView extends View {
     private int sunShadowColor=Color.parseColor("#bac3c3");
     //存储所有动画的ValueAnimator方便管理
     private ConcurrentHashMap<String,ValueAnimator> animMap=new ConcurrentHashMap<>();
+    //动画是否开始
     private boolean isStart=false;
 
     public WeatherView(Context context) {
