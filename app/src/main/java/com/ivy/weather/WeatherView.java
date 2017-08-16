@@ -21,7 +21,9 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by ivy on 2017/8/11.
@@ -61,7 +63,8 @@ public class WeatherView extends View {
     private float sunShadowWidth, sunShadowHeight;
     private int sunShadowColor=Color.parseColor("#bac3c3");
     //存储所有动画的ValueAnimator方便管理
-    private Map<String,ValueAnimator> animMap=new HashMap<>();
+    private ConcurrentHashMap<String,ValueAnimator> animMap=new ConcurrentHashMap<>();
+    private boolean isStart=false;
 
     public WeatherView(Context context) {
         super(context);
@@ -210,13 +213,14 @@ public class WeatherView extends View {
         canvas.drawCircle(getMeasuredWidth()/2,getMeasuredHeight()/2,minRingCenterWidth/2,mPaint);
     }
 
-    public void startAnim() {
+    public synchronized void startAnim() {
         resetAnim();
         startInvalidateAnim();
     }
 
     private static final String ANIM_CONTROL_INVALIDATE="anim_control_invalidate";
     private void startInvalidateAnim() {
+        isStart=true;
         ValueAnimator valueAnimator=animMap.get(ANIM_CONTROL_INVALIDATE);
         if (valueAnimator==null){
             valueAnimator=ValueAnimator.ofFloat(0,1);
@@ -238,7 +242,7 @@ public class WeatherView extends View {
             });
             animMap.put(ANIM_CONTROL_INVALIDATE,valueAnimator);
         }
-        valueAnimator.start();
+        startValueAnimator(valueAnimator);
     }
 
 
@@ -279,7 +283,7 @@ public class WeatherView extends View {
         valueAnimator.setObjectValues(new CircleInfo(circleInfo.getX(),circleInfo.getY()+circleInfo.getRadius(),0)
                 ,new CircleInfo(circleInfo.getX(),circleInfo.getY(),circleInfo.getRadius()));
         valueAnimator.setStartDelay(delay);
-        valueAnimator.start();
+        startValueAnimator(valueAnimator);
     }
 
     public static final String ANIM_CLOUD_SHADOW="anim_cloud_shadow";
@@ -297,7 +301,7 @@ public class WeatherView extends View {
             });
             animMap.put(ANIM_CLOUD_SHADOW,valueAnimator);
         }
-        valueAnimator.start();
+        startValueAnimator(valueAnimator);
     }
 
     public static final String ANIM_SUN_ZOOM="anim_sun_zoom";
@@ -318,7 +322,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_SUN_ZOOM,sunAnim);
         }
         sunAnim.setFloatValues(sunWidth,getMeasuredWidth(),finalSunWidth);
-        sunAnim.start();
+        startValueAnimator(sunAnim);
         //太阳光环
         ValueAnimator flowerAnim= animMap.get(ANIM_FLOWER_ZOOM);
         if (flowerAnim==null){
@@ -343,7 +347,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_FLOWER_ZOOM,flowerAnim);
         }
         flowerAnim.setFloatValues(0,maxSunFlowerWidth,maxSunFlowerWidth*0.9f);
-        flowerAnim.start();
+        startValueAnimator(flowerAnim);
         this.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -374,7 +378,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_WEATHER_SHADOW,valueAnimator);
         }
         valueAnimator.setFloatValues(0,getMeasuredWidth(),getMeasuredWidth()*0.8f);
-        valueAnimator.start();
+        startValueAnimator(valueAnimator);
     }
 
     public static final String ANIM_SUN_ROTATE="anim_sun_rotate";
@@ -392,7 +396,7 @@ public class WeatherView extends View {
             });
             animMap.put(ANIM_SUN_ROTATE,rotateAnim);
         }
-        rotateAnim.start();
+        startValueAnimator(rotateAnim);
     }
 
     public static final String ANIM_ARC_LINE_CENTER_ANGLE="anim_arc_line_center_angle";
@@ -414,7 +418,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_ARC_LINE_CENTER_ANGLE,centerArcLineAngleAnim);
         }
         centerArcLineAngleAnim.setFloatValues(centerArcAngle,180,0);
-        centerArcLineAngleAnim.start();
+        startValueAnimator(centerArcLineAngleAnim);
         //内部圆弧移动控制
         ValueAnimator centerArcLineMoveAnim= animMap.get(ANIM_ARC_LINE_CENTER_MOVE);
         if (centerArcLineMoveAnim==null){
@@ -435,7 +439,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_ARC_LINE_CENTER_MOVE,centerArcLineMoveAnim);
         }
         centerArcLineMoveAnim.setFloatValues(centerArcEndAngle,630);
-        centerArcLineMoveAnim.start();
+        startValueAnimator(centerArcLineMoveAnim);
         //外部圆弧长度控制
         ValueAnimator outSizeArcLineAngleAnim= animMap.get(ANIM_ARC_LINE_OUTSIZE_ANGLE);
         if (outSizeArcLineAngleAnim==null){
@@ -449,7 +453,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_ARC_LINE_OUTSIZE_ANGLE,outSizeArcLineAngleAnim);
         }
         outSizeArcLineAngleAnim.setFloatValues(outSideArcAngle,180,0);
-        outSizeArcLineAngleAnim.start();
+        startValueAnimator(outSizeArcLineAngleAnim);
         //外部圆弧移动控制
         ValueAnimator outSizeArcLineMoveAnim= animMap.get(ANIM_ARC_LINE_OUTSIZE_MOVE);
         if (outSizeArcLineMoveAnim==null){
@@ -463,7 +467,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_ARC_LINE_OUTSIZE_MOVE,outSizeArcLineMoveAnim);
         }
         outSizeArcLineMoveAnim.setFloatValues(outSideArcStartAngle,-90);
-        outSizeArcLineMoveAnim.start();
+        startValueAnimator(outSizeArcLineMoveAnim);
         this.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -495,7 +499,7 @@ public class WeatherView extends View {
             animMap.put(ANIM_RING_ZOOM,zoomAnim);
         }
         zoomAnim.setFloatValues(ringWidth,getMeasuredWidth()*0.8f);
-        zoomAnim.start();
+        startValueAnimator(zoomAnim);
 
         ValueAnimator circleZoom= animMap.get(ANIM_RING_CIRCLE_ZOOM);
         if (circleZoom==null){
@@ -517,7 +521,12 @@ public class WeatherView extends View {
             animMap.put(ANIM_RING_CIRCLE_ZOOM,circleZoom);
         }
         circleZoom.setFloatValues(minRingCenterWidth,getMeasuredWidth()*0.8f);
-        circleZoom.start();
+        startValueAnimator(circleZoom);
+    }
+
+    private void startValueAnimator(ValueAnimator valueAnimator){
+        if (isStart)
+            valueAnimator.start();
     }
 
     private void resetAnim() {
@@ -577,14 +586,16 @@ public class WeatherView extends View {
     }
 
     private void stopAnimAndRemoveCallbacks(){
+        isStart=false;
         Handler handler=this.getHandler();
         if (handler!=null){
             handler.removeCallbacksAndMessages(null);
         }
         for (Map.Entry<String, ValueAnimator> entry : animMap.entrySet()) {
-            if (entry.getValue()!=null){
-                entry.getValue().cancel();
-            }
+            entry.getValue().cancel();
+        }
+        if (handler!=null){
+            handler.removeCallbacksAndMessages(null);
         }
     }
 }
