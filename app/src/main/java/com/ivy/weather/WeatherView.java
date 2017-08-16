@@ -213,7 +213,7 @@ public class WeatherView extends View {
         canvas.drawCircle(getMeasuredWidth()/2,getMeasuredHeight()/2,minRingCenterWidth/2,mPaint);
     }
 
-    public synchronized void startAnim() {
+    public void startAnim() {
         resetAnim();
         startInvalidateAnim();
     }
