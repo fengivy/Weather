@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="settings"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/short_title"
+        android:shortcutLongLabel="@string/long_title"
+        android:shortcutDisabledMessage="@string/can_not_use">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.ivy.weather"
+            android:targetClass="com.ivy.setting.SettingActivity" />
+        <categories android:name="android.shortcut.conversation"/>
+    </shortcut>
+</shortcuts>
