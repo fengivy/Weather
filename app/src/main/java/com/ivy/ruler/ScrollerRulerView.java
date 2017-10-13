@@ -17,6 +17,10 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Scroller;
 import java.text.DecimalFormat;
 
+import static android.R.attr.subMenuArrow;
+import static android.R.attr.width;
+import static android.view.View.MeasureSpec.getMode;
+
 
 /**
  * Created by ivy on 2017/10/13.
@@ -25,13 +29,20 @@ import java.text.DecimalFormat;
 
 public class ScrollerRulerView extends View{
     private Paint mPaint;
+    //刻度宽度，用于控制显示刻度的多少
     private int scaleWidth,scaleNum;
+    //刻度高度
     private int minScaleHeight, maxScaleHeight ,selectScaleHeight;
+    //颜色
     private int scaleColor,selectScaleColor,rulerColor;
+    //刻度线的粗细
     private int scaleVerLineStroke, scaleHorLineStroke, ScaleHorLineEntireStroke, scaleHorLineSelectStroke;
     private int beginX=0;//滑动距离
+    //刻度文字颜色
     private int scaleTextColor;
+    //各个文字大小
     private float scaleTextSize,currentValueTextSize,currentValueUnitTextSize;
+    //单位
     private String unit="KG";
     private GestureDetector mGestureDetector=new GestureDetector(getContext(),new GestureDetector.SimpleOnGestureListener(){
         @Override
@@ -82,7 +93,12 @@ public class ScrollerRulerView extends View{
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        super.onMeasure(widthMeasureSpec,heightMeasureSpec);
+        int width=getMeasuredWidth();
+        int height=getMeasuredHeight();
+        int minWidth= (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,120,getContext().getResources().getDisplayMetrics());
+        int minHeight= (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,80,getContext().getResources().getDisplayMetrics());
+        setMeasuredDimension(Math.max(minWidth,width),Math.max(minHeight,height));
     }
 
     private void init() {
