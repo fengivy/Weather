@@ -17,10 +17,6 @@ import android.view.animation.LinearInterpolator;
 import android.widget.Scroller;
 import java.text.DecimalFormat;
 
-import static android.R.attr.subMenuArrow;
-import static android.R.attr.width;
-import static android.view.View.MeasureSpec.getMode;
-
 
 /**
  * Created by ivy on 2017/10/13.
