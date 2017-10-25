@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Weather</string>
+    <string name="app_name">好玩的View</string>
     <string name="short_title">short title</string>
     <string name="long_title">long title</string>
     <string name="can_not_use">can not use</string>

@@ -8,7 +8,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.ivy.ruler.RulerActivity">
+        <activity android:name="com.ivy.main.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -19,11 +19,15 @@
                 android:resource="@xml/shortcuts"/>
         </activity>
 
+        <activity android:name=".WeatherActivity"/>
+        <activity android:name="com.ivy.ruler.RulerActivity"/>
+        <activity android:name="com.ivy.bomb.BombActivity"/>
+
         <activity android:name="com.ivy.setting.SettingActivity"
-            android:parentActivityName="com.ivy.weather.MainActivity">
+            android:parentActivityName="com.ivy.weather.WeatherActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.ivy.weather.MainActivity" />
+                android:value="com.ivy.weather.WeatherActivity" />
         </activity>
     </application>
 
