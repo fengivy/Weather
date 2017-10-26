@@ -21,8 +21,11 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
+import android.support.v7.widget.GridLayoutManager;
 import android.util.AttributeSet;
 import android.view.View;
+
+import static android.animation.ValueAnimator.ofFloat;
 
 /**
  * Created by ivy on 2017/10/24.
@@ -49,7 +52,7 @@ public class BombView extends View {
     private float faceTBOffset =0, faceMaxTBOffset;
     private float bombLRRotate =15, bombMaxLRRotate =15 ,bombTBRotate=0, bombMaxTBRotate =5;
     private float eyeRadius,eyeMaxRadius,eyeMinRadius;
-    private float headLinePercent=1;
+    private float headLinePercent=1,headLineLightRate=0;
     private float maxBlastCircleRadius, currentBlastCircleRadius,blastCircleRadiusPercent;
     private float mouthMaxWidthOffset, mouthMaxHeightOffset, mouthWidthOffset=0, mouthHeightOffset =0,mouthOffsetPercent=0;
     //炸弹的中心点
@@ -284,13 +287,15 @@ public class BombView extends View {
         mPathMeasure.getPosTan(length,mPathPosition,null);
         mPaint.setColor(Color.parseColor("#fbb42d"));
         mPaint.setStyle(Paint.Style.FILL);
-        canvas.drawCircle(mPathPosition[0],mPathPosition[1],bombLineWidth/1.8f,mPaint);
+        canvas.drawCircle(mPathPosition[0],mPathPosition[1],Math.max(bombLineWidth/1.3f*headLineLightRate,bombLineWidth/2*1.2f),mPaint);
         mPaint.setColor(Color.parseColor("#f34671"));
         mPath.reset();
-        mPath.addCircle(mPathPosition[0],mPathPosition[1],bombLineWidth/4, Path.Direction.CCW);
+        mPath.addCircle(mPathPosition[0],mPathPosition[1],bombLineWidth/2.5f*headLineLightRate, Path.Direction.CCW);
         mPaint.setPathEffect(mHeadEffect);
         canvas.drawPath(mPath,mPaint);
         mPaint.setPathEffect(null);
+        mPaint.setColor(Color.WHITE);
+        canvas.drawCircle(mPathPosition[0],mPathPosition[1], bombLineWidth /6.5f * headLineLightRate,mPaint);
         canvas.restore();
     }
 
@@ -422,6 +427,7 @@ public class BombView extends View {
         mouthWidthOffset=0;
         mouthHeightOffset =0;
         mouthOffsetPercent=0;
+        headLineLightRate=0;
     }
 
     private int getFaceChangeAnimTime(){
@@ -430,7 +436,7 @@ public class BombView extends View {
     private AnimatorSet getFaceChangeAnim(){
         AnimatorSet animatorSet=new AnimatorSet();
         //眼睛
-        ValueAnimator valueAnimator=ObjectAnimator.ofFloat(1,0,1.4f)
+        ValueAnimator valueAnimator= ofFloat(1,0,1.4f)
                 .setDuration(getFaceChangeAnimTime());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -442,7 +448,7 @@ public class BombView extends View {
                 invalidate();
             }
         });
-        ValueAnimator mouthAnimator=ObjectAnimator.ofFloat(0,1)
+        ValueAnimator mouthAnimator= ofFloat(0,1)
                 .setDuration(getFaceChangeAnimTime());
         mouthAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -466,7 +472,7 @@ public class BombView extends View {
     }
 
     private ValueAnimator getFaceTopBottomAnim(){
-        ValueAnimator objectAnimator=ValueAnimator.ofFloat(0,1)
+        ValueAnimator objectAnimator= ofFloat(0,1)
                 .setDuration(getFaceTopBottomAnimTime());
         objectAnimator.setStartDelay(getFaceTopBottomAnimDelayTime());
         objectAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -485,7 +491,7 @@ public class BombView extends View {
         return 1500;
     }
     private ValueAnimator getFaceLeftRightAnim(){
-        ValueAnimator valueAnimator=ValueAnimator.ofFloat(-1,0,1,0)
+        ValueAnimator valueAnimator= ofFloat(-1,0,1,0)
                 .setDuration(getFaceLeftRightAnimTime());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -507,8 +513,9 @@ public class BombView extends View {
     private int getHeadLineAnimTime(){
         return getFaceLeftRightAnimTime()+getFaceTopBottomAnimTime()+getFaceTopBottomAnimDelayTime()+getFaceChangeAnimTime()+600;
     }
-    private ValueAnimator getHeadLineAnim(){
-        ValueAnimator valueAnimator=ValueAnimator.ofFloat(1f,0f)
+    private AnimatorSet getHeadLineAnim(){
+        AnimatorSet animatorSet=new AnimatorSet();
+        ValueAnimator valueAnimator= ofFloat(1f,0f)
                 .setDuration(getHeadLineAnimTime());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -517,12 +524,22 @@ public class BombView extends View {
                 invalidate();
             }
         });
-        return valueAnimator;
+        ValueAnimator valueAnimatorLight=ValueAnimator.ofFloat(0f,1.3f,0f)
+                .setDuration(getHeadLineAnimTime()/5);
+        valueAnimatorLight.setRepeatCount(5);
+        valueAnimatorLight.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                headLineLightRate= (float) animation.getAnimatedValue();
+            }
+        });
+        animatorSet.play(valueAnimator).with(valueAnimatorLight);
+        return animatorSet;
     }
 
 
     private ValueAnimator getBlastAnim(){
-        ValueAnimator valueAnimator=ValueAnimator.ofFloat(0,maxBlastCircleRadius)
+        ValueAnimator valueAnimator= ofFloat(0,maxBlastCircleRadius)
                 .setDuration(500);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
