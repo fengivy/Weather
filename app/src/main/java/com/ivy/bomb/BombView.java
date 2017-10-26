@@ -37,7 +37,9 @@ public class BombView extends View {
     private int bombShadowColor = Color.parseColor("#77609ee6");
     private int lightColor = Color.WHITE;
     private int bombLineWidth;
+    //炸弹身体半径 高光半径
     private int bodyRadius, highLightRadius;
+    //用于处理线条的分割点
     private DashPathEffect groundDashPathEffect,bodyDashPathEffect,highLightPathEffect,mHeadEffect;
     private RectF mRectF;
     private PathMeasure mPathMeasure=new PathMeasure();
@@ -47,12 +49,15 @@ public class BombView extends View {
     private float faceTBOffset =0, faceMaxTBOffset;
     private float bombLRRotate =15, bombMaxLRRotate =15 ,bombTBRotate=0, bombMaxTBRotate =5;
     private float eyeRadius,eyeMaxRadius,eyeMinRadius;
-    private Camera mCamera=new Camera();
-    private Matrix mMatrix=new Matrix();
     private float headLinePercent=1;
     private float maxBlastCircleRadius, currentBlastCircleRadius,blastCircleRadiusPercent;
     private float mouthMaxWidthOffset, mouthMaxHeightOffset, mouthWidthOffset=0, mouthHeightOffset =0,mouthOffsetPercent=0;
+    //炸弹的中心点
     private int bombCenterX,bombCenterY;
+    //用于控制旋转
+    private Camera mCamera=new Camera();
+    private Matrix mMatrix=new Matrix();
+
 
     public BombView(Context context) {
         super(context);
@@ -135,17 +140,18 @@ public class BombView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        drawHead(canvas);
-        drawGround(canvas);
-        drawBody(canvas);
-        drawBodyBorder(canvas);
-        drawFace(canvas);
-        drawFaceShadow(canvas);
-        drawHeadLine(canvas);
-        drawBlast(canvas);
+        drawHead(canvas);//头部小房子
+        drawGround(canvas);//地板
+        drawBody(canvas);//身体
+        drawBodyBorder(canvas);//身体边框
+        drawFace(canvas);//脸
+        drawFaceShadow(canvas);//脸阴影
+        drawHeadLine(canvas);//头部的炸弹线
+        drawBlast(canvas);//爆炸
     }
 
     private void drawFaceShadow(Canvas canvas) {
+        //两个圆相交产生阴影
         int save=canvas.saveLayer(0,0,getMeasuredWidth(),getMeasuredHeight(),null,Canvas.ALL_SAVE_FLAG);
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(bombShadowColor);
@@ -169,7 +175,7 @@ public class BombView extends View {
         mMatrix.postTranslate(bombCenterX,bombCenterY);
         mMatrix.postTranslate(faceLROffset,faceTBOffset);
         canvas.setMatrix(mMatrix);
-        //眼睛
+        //眼睛 椭圆控制
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(bombLineColor);
         float eyeY=bombCenterY+bodyRadius/5;
@@ -180,7 +186,7 @@ public class BombView extends View {
         mRectF.set(bombCenterX+bodyRadius/3.5f-eyeWidth,eyeY-eyeRadius
                 ,bombCenterX+bodyRadius/3.5f+eyeWidth,eyeY+eyeRadius);
         canvas.drawOval(mRectF,mPaint);
-        //画嘴巴
+        //画嘴巴 路径
         float mouthY=eyeY+bombLineWidth- mouthHeightOffset;
         float mouthMaxY=mouthY+bodyRadius/7+ mouthHeightOffset;
         float mouthHalfDistance=bodyRadius/5-mouthWidthOffset*0.5f;
@@ -206,7 +212,7 @@ public class BombView extends View {
         mPath.quadTo(bombCenterX-mouthHalfDistance,mouthY,bombCenterX-mouthTopHalfDistance,mouthY);
         mPath.close();
         canvas.drawPath(mPath,mPaint);
-        //画舌头
+        //画舌头 圆和嘴巴的缩放相交
         int save=canvas.saveLayer(0,0,getMeasuredWidth(),getMeasuredHeight(),null,Canvas.ALL_SAVE_FLAG);
         canvas.drawPath(mPath,mPaint);
         mPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
