@@ -536,12 +536,12 @@ public class BombView extends View {
     }
 
     private int getFaceLeftRightAnimTime(){
-        return 1500;
+        return 1400;
     }
     private ValueAnimator getFaceLeftRightAnim(){
         ValueAnimator valueAnimator= ofFloat(-1,0,1,0)
                 .setDuration(getFaceLeftRightAnimTime());
-        valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
+        valueAnimator.setInterpolator(new DecelerateInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
