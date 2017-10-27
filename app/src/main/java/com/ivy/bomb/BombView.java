@@ -533,7 +533,7 @@ public class BombView extends View {
     }
 
     private int getHeadLineAnimTime(){
-        return getFaceLeftRightAnimTime()+getFaceTopBottomAnimTime()+getFaceTopBottomAnimDelayTime()+getFaceChangeAnimTime()+600;
+        return getFaceLeftRightAnimTime()+getFaceTopBottomAnimTime()+getFaceTopBottomAnimDelayTime()+getFaceChangeAnimTime()+500;
     }
     private AnimatorSet getHeadLineAnim(){
         AnimatorSet animatorSet=new AnimatorSet();
@@ -559,15 +559,13 @@ public class BombView extends View {
         return animatorSet;
     }
 
-    private boolean isNeedInitData=true;
     private ValueAnimator getBlastAnim(){
         ValueAnimator valueAnimator= ofFloat(0,maxBlastCircleRadius)
                 .setDuration(500);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                if (animation.getAnimatedFraction()>0.7f&&isNeedInitData){
-                    isNeedInitData=false;
+                if (animation.getAnimatedFraction()>0.7f){
                     initData();
                 }
                 currentBlastCircleRadius = (float) animation.getAnimatedValue();
@@ -581,12 +579,6 @@ public class BombView extends View {
                 super.onAnimationEnd(animation);
                 initData();
                 invalidate();
-            }
-
-            @Override
-            public void onAnimationStart(Animator animation) {
-                super.onAnimationStart(animation);
-                isNeedInitData=true;
             }
         });
         return valueAnimator;
