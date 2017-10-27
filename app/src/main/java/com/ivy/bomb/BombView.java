@@ -3,7 +3,6 @@ package com.ivy.bomb;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Camera;
@@ -21,7 +20,6 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
-import android.support.v7.widget.GridLayoutManager;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -36,7 +34,7 @@ import static android.animation.ValueAnimator.ofFloat;
 
 public class BombView extends View {
     private Paint mPaint;
-    private Path mPath,mPathTemp;
+    private Path mPath, mHeadLinePath ,mHeadPath ,mBodyLightPath;
     private int bombColor = Color.parseColor("#88B0E8");
     private int bombLineColor = Color.parseColor("#181D82");
     private int bombShadowColor = Color.parseColor("#77609ee6");
@@ -96,7 +94,9 @@ public class BombView extends View {
         mPaint.setStrokeJoin(Paint.Join.ROUND);
         mPath=new Path();
         mRectF=new RectF();
-        mPathTemp=new Path();
+        mHeadLinePath =new Path();
+        mHeadPath =new Path();
+        mBodyLightPath =new Path();
     }
 
     @Override
@@ -146,6 +146,47 @@ public class BombView extends View {
 
         bombCenterX=getMeasuredWidth()/2;
         bombCenterY=getMeasuredHeight()-bombLineWidth-bodyRadius;
+
+        setHeadLinePath();
+        setHeadPath();
+        setBodyLightPath();
+    }
+
+    private void setBodyLightPath() {
+        //160度坐标计算
+        mBodyLightPath.reset();
+        Point point=getPointInCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth,160);
+        mBodyLightPath.moveTo(point.x-bodyRadius,point.y);
+        mBodyLightPath.lineTo(point.x,point.y);
+        Point pointControl=getPointInCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth+bombLineWidth*2.2f,210);
+        point=getPointInCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth,260);
+        mBodyLightPath.quadTo(pointControl.x,pointControl.y,point.x,point.y);
+        mBodyLightPath.lineTo(point.x-bodyRadius,point.y);
+        mBodyLightPath.close();
+    }
+
+    private void setHeadPath() {
+        mHeadPath.reset();
+        mHeadPath.moveTo(bombCenterX-bodyRadius/5,getMeasuredHeight()/2);
+        mHeadPath.lineTo(bombCenterX+bodyRadius/5,getMeasuredHeight()/2);
+        mHeadPath.lineTo(bombCenterX+bodyRadius/5,bombCenterY-bodyRadius-bodyRadius/4);
+        mHeadPath.lineTo(bombCenterX,bombCenterY-bodyRadius-bodyRadius/4-bodyRadius/4/4);
+        mHeadPath.lineTo(bombCenterX-bodyRadius/5,bombCenterY-bodyRadius-bodyRadius/4);
+        mHeadPath.close();
+    }
+
+    private void setHeadLinePath() {
+        float beginY=bombCenterY-bodyRadius-bodyRadius/4-bodyRadius/4/4;
+        mHeadLinePath.reset();
+        mHeadLinePath.moveTo(bombCenterX,beginY);
+        float controlY=beginY-bodyRadius/2.2f;
+        float bottomPointY=bombCenterY-bodyRadius;//转折点高度
+        mHeadLinePath.quadTo(bombCenterX+bodyRadius/2/5,controlY,bombCenterX+bodyRadius/2,controlY);
+        mHeadLinePath.cubicTo(bombCenterX+bodyRadius/2+bodyRadius/2/5*4,controlY
+                ,bombCenterX+bodyRadius/2*2f-bodyRadius/16,bottomPointY-bodyRadius/6
+                ,bombCenterX+bodyRadius/2*2f,bottomPointY);
+        mHeadLinePath.quadTo(bombCenterX+bodyRadius/2*2f+bodyRadius/16,bottomPointY+bodyRadius/6
+                ,bombCenterX+bodyRadius/2*2f+bodyRadius/7,bottomPointY+bodyRadius/4);
     }
 
     @Override
@@ -266,6 +307,10 @@ public class BombView extends View {
         canvas.restoreToCount(save);
     }
 
+    public void getPathTemp(){
+
+    }
+
     private void drawHeadLine(Canvas canvas) {
         canvas.save();
         mCamera.save();
@@ -276,20 +321,9 @@ public class BombView extends View {
         mMatrix.preTranslate(-bombCenterX,-bombCenterY);
         mMatrix.postTranslate(bombCenterX,bombCenterY);
         canvas.setMatrix(mMatrix);
-        float beginY=bombCenterY-bodyRadius-bodyRadius/4-bodyRadius/4/4;
-        mPathTemp.reset();
-        mPathTemp.moveTo(bombCenterX,beginY);
-        float controlY=beginY-bodyRadius/2.2f;
-        float bottomPointY=bombCenterY-bodyRadius;//转折点高度
-        mPathTemp.quadTo(bombCenterX+bodyRadius/2/5,controlY,bombCenterX+bodyRadius/2,controlY);
-        mPathTemp.cubicTo(bombCenterX+bodyRadius/2+bodyRadius/2/5*4,controlY
-                ,bombCenterX+bodyRadius/2*2f-bodyRadius/16,bottomPointY-bodyRadius/6
-                ,bombCenterX+bodyRadius/2*2f,bottomPointY);
-        mPathTemp.quadTo(bombCenterX+bodyRadius/2*2f+bodyRadius/16,bottomPointY+bodyRadius/6
-                         ,bombCenterX+bodyRadius/2*2f+bodyRadius/7,bottomPointY+bodyRadius/4);
         mPaint.setColor(bombLineColor);
         mPaint.setStyle(Paint.Style.STROKE);
-        mPathMeasure.setPath(mPathTemp,false);
+        mPathMeasure.setPath(mHeadLinePath,false);
         mPath.reset();
         mPathMeasure.getSegment(0,mPathMeasure.getLength()*headLinePercent,mPath,true);
         canvas.drawPath(mPath,mPaint);
@@ -321,22 +355,16 @@ public class BombView extends View {
         mMatrix.preTranslate(-bombCenterX,-(bombCenterY));
         mMatrix.postTranslate(bombCenterX,(bombCenterY));
         canvas.setMatrix(mMatrix);
-        mPath.reset();
-        mPath.moveTo(bombCenterX-bodyRadius/5,getMeasuredHeight()/2);
-        mPath.lineTo(bombCenterX+bodyRadius/5,getMeasuredHeight()/2);
-        mPath.lineTo(bombCenterX+bodyRadius/5,bombCenterY-bodyRadius-bodyRadius/4);
-        mPath.lineTo(bombCenterX,bombCenterY-bodyRadius-bodyRadius/4-bodyRadius/4/4);
-        mPath.lineTo(bombCenterX-bodyRadius/5,bombCenterY-bodyRadius-bodyRadius/4);
-        mPath.close();
+
         mPaint.setStrokeWidth(bombLineWidth*0.8f);
         //内部
         mPaint.setColor(bombColor);
         mPaint.setStyle(Paint.Style.FILL);
-        canvas.drawPath(mPath,mPaint);
+        canvas.drawPath(mHeadPath,mPaint);
         //边框
         mPaint.setColor(bombLineColor);
         mPaint.setStyle(Paint.Style.STROKE);
-        canvas.drawPath(mPath,mPaint);
+        canvas.drawPath(mHeadPath,mPaint);
         mPaint.setStrokeWidth(bombLineWidth);
         canvas.restore();
     }
@@ -362,19 +390,10 @@ public class BombView extends View {
         mPath.addCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth/2, Path.Direction.CCW);
         canvas.save();
         canvas.clipPath(mPath);
-        //160度坐标计算
-        mPath.reset();
-        Point point=getPointInCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth,160);
-        mPath.moveTo(point.x-bodyRadius,point.y);
-        mPath.lineTo(point.x,point.y);
-        Point pointControl=getPointInCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth+bombLineWidth*2.2f,210);
-        point=getPointInCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth,260);
-        mPath.quadTo(pointControl.x,pointControl.y,point.x,point.y);
-        mPath.lineTo(point.x-bodyRadius,point.y);
-        mPath.close();
+
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(lightColor);
-        canvas.drawPath(mPath,mPaint);
+        canvas.drawPath(mBodyLightPath,mPaint);
         canvas.restore();
     }
 
