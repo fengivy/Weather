@@ -21,10 +21,12 @@ import android.os.Build;
 import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
+import static android.R.attr.minWidth;
 import static android.animation.ValueAnimator.ofFloat;
 
 /**
@@ -84,6 +86,16 @@ public class BombView extends View {
     public BombView(Context context, @Nullable AttributeSet attrs, int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+        int width=getMeasuredWidth();
+        int height=getMeasuredHeight();
+        int minLength= (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,100,getContext().getResources().getDisplayMetrics());
+        minLength=Math.max(Math.min(width,height),minLength);
+        setMeasuredDimension(minLength,minLength);
     }
 
     private void init() {
@@ -244,7 +256,7 @@ public class BombView extends View {
         float mouthHalfDistance=bodyRadius/5-mouthWidthOffset*0.5f + mouthFSWidthOffset;//嘴巴顶部的拐角的一半宽度
         float mouthTopHalfDistance=(mouthHalfDistance-bodyRadius/5/10)-mouthWidthOffset; //嘴巴顶部的一半宽度
         float mouthHorDistanceHalf=(mouthMaxY-mouthY)/(6-4*mouthOffsetPercent);//嘴角控制点的距离嘴角点的竖直距离
-        if (mouthTopHalfDistance<bodyRadius/5/10){
+        if (mouthTopHalfDistance<bodyRadius/5/10){//让过渡更加自然
             mouthTopHalfDistance=0;
         }
         mPath.reset();
@@ -305,10 +317,6 @@ public class BombView extends View {
             mPaint.setXfermode(null);
         }
         canvas.restoreToCount(save);
-    }
-
-    public void getPathTemp(){
-
     }
 
     private void drawHeadLine(Canvas canvas) {
@@ -389,7 +397,7 @@ public class BombView extends View {
         mPath.reset();
         mPath.addCircle(bombCenterX,bombCenterY,bodyRadius-bombLineWidth/2, Path.Direction.CCW);
         canvas.save();
-        canvas.clipPath(mPath);
+        canvas.clipPath(mPath);//裁剪圆内
 
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(lightColor);
