@@ -102,7 +102,7 @@ public class BombView extends View {
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-        bombLineWidth =getMeasuredWidth()/30;
+        bombLineWidth =getMeasuredWidth()/35;
         mPaint.setStrokeWidth(bombLineWidth);
         float[] groundEffectFloat=new float[]{bombLineWidth/4,bombLineWidth/2+bombLineWidth,bombLineWidth*2,bombLineWidth/3*2+bombLineWidth,getMeasuredWidth(),0};
         groundDashPathEffect=new DashPathEffect(groundEffectFloat,0);
