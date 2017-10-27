@@ -279,9 +279,14 @@ public class BombView extends View {
         float beginY=bombCenterY-bodyRadius-bodyRadius/4-bodyRadius/4/4;
         mPathTemp.reset();
         mPathTemp.moveTo(bombCenterX,beginY);
-        float controlY=beginY-bodyRadius/2;
+        float controlY=beginY-bodyRadius/2.2f;
+        float bottomPointY=bombCenterY-bodyRadius;//转折点高度
         mPathTemp.quadTo(bombCenterX+bodyRadius/2/5,controlY,bombCenterX+bodyRadius/2,controlY);
-        mPathTemp.quadTo(bombCenterX+bodyRadius/2+bodyRadius/2/5*4,controlY,bombCenterX+bodyRadius/2*2f,bombCenterY-bodyRadius);
+        mPathTemp.cubicTo(bombCenterX+bodyRadius/2+bodyRadius/2/5*4,controlY
+                ,bombCenterX+bodyRadius/2*2f-bodyRadius/16,bottomPointY-bodyRadius/6
+                ,bombCenterX+bodyRadius/2*2f,bottomPointY);
+        mPathTemp.quadTo(bombCenterX+bodyRadius/2*2f+bodyRadius/16,bottomPointY+bodyRadius/6
+                         ,bombCenterX+bodyRadius/2*2f+bodyRadius/7,bottomPointY+bodyRadius/4);
         mPaint.setColor(bombLineColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPathMeasure.setPath(mPathTemp,false);
