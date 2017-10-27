@@ -24,6 +24,8 @@ import android.support.annotation.RequiresApi;
 import android.support.v7.widget.GridLayoutManager;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
 
 import static android.animation.ValueAnimator.ofFloat;
 
@@ -54,7 +56,10 @@ public class BombView extends View {
     private float eyeRadius,eyeMaxRadius,eyeMinRadius;
     private float headLinePercent=1,headLineLightRate=0;
     private float maxBlastCircleRadius, currentBlastCircleRadius,blastCircleRadiusPercent;
+    //用于计算mouth第二阶段变化
     private float mouthMaxWidthOffset, mouthMaxHeightOffset, mouthWidthOffset=0, mouthHeightOffset =0,mouthOffsetPercent=0;
+    //用于计算mouth第一阶段变化
+    private float mouthFSMaxWidthOffset,mouthFSMaxHeightOffset,mouthFSWidthOffset=0,mouthFSHeightOffset=0;
     //炸弹的中心点
     private int bombCenterX,bombCenterY;
     //用于控制旋转
@@ -136,6 +141,9 @@ public class BombView extends View {
         mouthMaxWidthOffset =bodyRadius/5-bodyRadius/5/10;
         mouthMaxHeightOffset =bodyRadius/5/2;
 
+        mouthFSMaxWidthOffset= mouthMaxWidthOffset/3;
+        mouthFSMaxHeightOffset = mouthMaxHeightOffset/2;
+
         bombCenterX=getMeasuredWidth()/2;
         bombCenterY=getMeasuredHeight()-bombLineWidth-bodyRadius;
     }
@@ -190,12 +198,11 @@ public class BombView extends View {
                 ,bombCenterX+bodyRadius/3.5f+eyeWidth,eyeY+eyeRadius);
         canvas.drawOval(mRectF,mPaint);
         //画嘴巴 路径
-        float mouthY=eyeY+bombLineWidth- mouthHeightOffset;
-        float mouthMaxY=mouthY+bodyRadius/7+ mouthHeightOffset;
-        float mouthHalfDistance=bodyRadius/5-mouthWidthOffset*0.5f;
-        float mouthTopHalfDistance=(mouthHalfDistance-bodyRadius/5/10)-mouthWidthOffset;
-
-        float mouthHorDistanceHalf=(mouthMaxY-mouthY)/(6-4*mouthOffsetPercent);//嘴角控制点的距离嘴角点的竖起距离
+        float mouthY=eyeY+bombLineWidth- mouthHeightOffset;//嘴巴起始高度
+        float mouthMaxY=mouthY+bodyRadius/7+ mouthHeightOffset - mouthFSHeightOffset;//嘴巴最底部
+        float mouthHalfDistance=bodyRadius/5-mouthWidthOffset*0.5f + mouthFSWidthOffset;//嘴巴顶部的拐角的一半宽度
+        float mouthTopHalfDistance=(mouthHalfDistance-bodyRadius/5/10)-mouthWidthOffset; //嘴巴顶部的一半宽度
+        float mouthHorDistanceHalf=(mouthMaxY-mouthY)/(6-4*mouthOffsetPercent);//嘴角控制点的距离嘴角点的竖直距离
         if (mouthTopHalfDistance<bodyRadius/5/10){
             mouthTopHalfDistance=0;
         }
@@ -427,16 +434,19 @@ public class BombView extends View {
         mouthWidthOffset=0;
         mouthHeightOffset =0;
         mouthOffsetPercent=0;
+        mouthFSWidthOffset=0;
+        mouthFSHeightOffset=0;
         headLineLightRate=0;
     }
 
     private int getFaceChangeAnimTime(){
-        return 300;
+        return 450;
     }
+
     private AnimatorSet getFaceChangeAnim(){
         AnimatorSet animatorSet=new AnimatorSet();
         //眼睛
-        ValueAnimator valueAnimator= ofFloat(1,0,1.4f)
+        ValueAnimator valueAnimator= ValueAnimator.ofFloat(1,0,1.4f)
                 .setDuration(getFaceChangeAnimTime());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
@@ -445,18 +455,24 @@ public class BombView extends View {
                 if (eyeRadius<eyeMinRadius){
                     eyeRadius=eyeMinRadius;
                 }
-                invalidate();
             }
         });
-        ValueAnimator mouthAnimator= ofFloat(0,1)
+
+        ValueAnimator mouthAnimator=ValueAnimator.ofFloat(0,1,0,1)
                 .setDuration(getFaceChangeAnimTime());
+        mouthAnimator.setInterpolator(new DecelerateInterpolator());
         mouthAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 float value= (float) animation.getAnimatedValue();
-                mouthWidthOffset=mouthMaxWidthOffset*value;
-                mouthHeightOffset = mouthMaxHeightOffset *value;
-                mouthOffsetPercent=animation.getAnimatedFraction();
+                if (animation.getAnimatedFraction()>0.75){//第一阶段还是第二阶段
+                    mouthWidthOffset=mouthMaxWidthOffset*value;
+                    mouthHeightOffset = mouthMaxHeightOffset *value;
+                    mouthOffsetPercent=animation.getAnimatedFraction();
+                }else{
+                    mouthFSWidthOffset=mouthFSMaxWidthOffset*value;
+                    mouthFSHeightOffset=mouthFSMaxHeightOffset*value;
+                }
                 invalidate();
             }
         });
@@ -465,7 +481,7 @@ public class BombView extends View {
     }
 
     private int getFaceTopBottomAnimTime(){
-        return 200;
+        return 300;
     }
     private int getFaceTopBottomAnimDelayTime(){
         return 200;
@@ -493,6 +509,7 @@ public class BombView extends View {
     private ValueAnimator getFaceLeftRightAnim(){
         ValueAnimator valueAnimator= ofFloat(-1,0,1,0)
                 .setDuration(getFaceLeftRightAnimTime());
+        valueAnimator.setInterpolator(new AccelerateDecelerateInterpolator());
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
@@ -537,14 +554,15 @@ public class BombView extends View {
         return animatorSet;
     }
 
-
+    private boolean isNeedInitData=true;
     private ValueAnimator getBlastAnim(){
         ValueAnimator valueAnimator= ofFloat(0,maxBlastCircleRadius)
                 .setDuration(500);
         valueAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
-                if (animation.getAnimatedFraction()>0.7f){
+                if (animation.getAnimatedFraction()>0.7f&&isNeedInitData){
+                    isNeedInitData=false;
                     initData();
                 }
                 currentBlastCircleRadius = (float) animation.getAnimatedValue();
@@ -558,6 +576,12 @@ public class BombView extends View {
                 super.onAnimationEnd(animation);
                 initData();
                 invalidate();
+            }
+
+            @Override
+            public void onAnimationStart(Animator animation) {
+                super.onAnimationStart(animation);
+                isNeedInitData=true;
             }
         });
         return valueAnimator;
