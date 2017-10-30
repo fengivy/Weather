@@ -4,5 +4,7 @@
 2. ScrollRuleView 依照薄荷健康的滑动卷尺效果
 
 ![图片](https://github.com/fengivy/Weather/blob/master/app/src/main/res/drawable/a.gif)
+
+
 3.bombView小炸弹,[详细请查看文章](http://www.jianshu.com/p/a622fa556c1b)
 ![图片](http://upload-images.jianshu.io/upload_images/837800-3301776994029a39.gif?imageMogr2/auto-orient/strip)
