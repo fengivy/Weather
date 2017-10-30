@@ -23,10 +23,7 @@ import android.support.annotation.RequiresApi;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
-
-import static android.R.attr.minWidth;
 import static android.animation.ValueAnimator.ofFloat;
 
 /**
@@ -238,7 +235,7 @@ public class BombView extends View {
         mMatrix.preTranslate(-bombCenterX,-(bombCenterY));
         mMatrix.postTranslate(bombCenterX,bombCenterY);
         mMatrix.postTranslate(faceLROffset,faceTBOffset);
-        canvas.setMatrix(mMatrix);
+        canvas.concat(mMatrix);
         //眼睛 椭圆控制
         mPaint.setStyle(Paint.Style.FILL);
         mPaint.setColor(bombLineColor);
@@ -328,7 +325,7 @@ public class BombView extends View {
         mCamera.restore();
         mMatrix.preTranslate(-bombCenterX,-bombCenterY);
         mMatrix.postTranslate(bombCenterX,bombCenterY);
-        canvas.setMatrix(mMatrix);
+        canvas.concat(mMatrix);
         mPaint.setColor(bombLineColor);
         mPaint.setStyle(Paint.Style.STROKE);
         mPathMeasure.setPath(mHeadLinePath,false);
@@ -362,7 +359,7 @@ public class BombView extends View {
         mCamera.restore();
         mMatrix.preTranslate(-bombCenterX,-(bombCenterY));
         mMatrix.postTranslate(bombCenterX,(bombCenterY));
-        canvas.setMatrix(mMatrix);
+        canvas.concat(mMatrix);
 
         mPaint.setStrokeWidth(bombLineWidth*0.8f);
         //内部
